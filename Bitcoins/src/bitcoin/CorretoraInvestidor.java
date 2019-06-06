@@ -18,13 +18,17 @@ public class CorretoraInvestidor {
     public static void main(String[] args) {
         //DecimalFormat d = new DecimalFormat("0.00");
         Corretora cor = new Corretora();
-        List<Investidor> investidores = new ArrayList<>();
+        //List<Investidor> investidores = new ArrayList<>();
+        Investidor inv1 = new Investidor(cor,0);
+        Investidor inv2 = new Investidor(cor, 1);
+        inv1.start();
+        inv2.start();
         
-        for(int i = 0; i<10; i++){
+        /*for(int i = 0; i<10; i++){
             investidores.add(new Investidor(cor,  i));
         }
         for(Investidor i:investidores){
             i.start();
-        }
+        }*/
     }
 }

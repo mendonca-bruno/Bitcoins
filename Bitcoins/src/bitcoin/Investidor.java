@@ -6,7 +6,10 @@
 package bitcoin;
 
 import java.text.DecimalFormat;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -29,57 +32,49 @@ public class Investidor extends Thread{
         this.d = new DecimalFormat("0.00");
     }
     
-   public void comprar(Double bitcoin){
-       try {
-           if(capital >= cor.getValor_bitcoin()){
-               System.out.println("Investidor " + id + " comprou " + d.format(bitcoin) + " bitcoins");
-           }         
-           Thread.sleep((long)(Math.random()*1000));
-       } catch (Exception e) {
-       }finally{       
-                 
-            if(capital >= cor.getValor_bitcoin()){
-             cor.vender(bitcoin);             
-             atualizaCapital(bitcoin);
-             this.carteira += bitcoin;
+    public void comprar(double bitcoin) throws InterruptedException{
+        if(capital>=bitcoin*cor.getValor_bitcoin()){
+            double compra = cor.vender(bitcoin);
+            if(compra!=-1){
+                carteira+=bitcoin;
+                capital-=compra;
+                System.out.println("Investidor " +id+ " comprou "+d.format(bitcoin) + " bitcoins");
+                System.out.println(+id+" Bitcoins corretora: " +d.format(cor.getBitcoin()));
+                System.out.println(+id+" Bitcoins Investidor "+id+ "= " +d.format(this.carteira));
+                Thread.sleep(1000);
             }
-       }
-   }
-   public void vender(double bitcoin){
-       try {
-           if(carteira!=0){
-           System.out.println("Investidor " + id + " vendeu " + d.format(bitcoin) + " bitcoins");
-           
-           }           
-           Thread.sleep((long)(Math.random()*1000));
-       } catch (Exception e) {
-       }finally{
-           if(carteira!=0){
-               cor.comprar(bitcoin);
-               attCap2(bitcoin);
-               this.carteira-=bitcoin;
-               
+        }
+    }
+   public void vender(double bitcoin) throws InterruptedException{
+       if(cor.getFundos()>=bitcoin*cor.getValor_bitcoin()){
+           double venda = cor.comprar(bitcoin);
+           if(venda!=-1){
+               capital+=venda;
+               carteira-=bitcoin;
+               System.out.println("Investidor " +id+ " vendeu "+d.format(bitcoin) + " bitcoins");
+               System.out.println(+id+" Bitcoins corretora: " +d.format(cor.getBitcoin()));
+               System.out.println(+id+" Bitcoins Investidor "+id+ "= " +d.format(this.carteira));
+               Thread.sleep(1000);
            }
        }
-       
    }
-   public void attCap2(Double bitcoin){
-       this.capital+= cor.calculaValor(bitcoin);
-   }
-   
-   public void atualizaCapital(Double bitcoin){
-       this.capital -= cor.calculaValor(bitcoin);
-   }
-   
+    
     @Override
    public void run(){
+       double bitcoin;
        while(true){
-           try {
-               if(capital>=cor.getValor_bitcoin()) comprar(ThreadLocalRandom.current().nextDouble(0.1, cor.getBitcoin()));
-               if(carteira>0) vender(ThreadLocalRandom.current().nextDouble(0.1, carteira));
-                
-           } catch (Exception e) {
+           bitcoin = ThreadLocalRandom.current().nextDouble(0.1, cor.getBitcoin());
+           if(capital>=bitcoin*cor.getValor_bitcoin()) try {
+               comprar(bitcoin);
+           } catch (InterruptedException ex) {
+               Logger.getLogger(Investidor.class.getName()).log(Level.SEVERE, null, ex);
            }
+           if(carteira>0) try {
+               vender(ThreadLocalRandom.current().nextDouble(0.1, carteira));
+           } catch (InterruptedException ex) {
+               Logger.getLogger(Investidor.class.getName()).log(Level.SEVERE, null, ex);
+           }
+          
        
    }
    }

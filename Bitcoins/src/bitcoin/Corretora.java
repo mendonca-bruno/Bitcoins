@@ -20,41 +20,35 @@ public class Corretora extends Thread{
         this.fundos = 200000.00;
     }
     
-    public void vender(Double bitcoin){
-        
-        if(this.bitcoin>=bitcoin){
+    public synchronized double vender(double bitcoin){ //investidores comprando
+        double temp;
+        try {
+            while(this.bitcoin<bitcoin ||this.bitcoin<=0) wait();
+            fundos += bitcoin*valor_bitcoin;
+            this.bitcoin -= bitcoin;
+            temp = valor_bitcoin;
+            valor_bitcoin = valor_bitcoin+(0.01*valor_bitcoin); //valor bitcoin sobe
+            notifyAll();
+            return temp;
             
-        
-        atualizaValor(bitcoin);
-        this.fundos = this.fundos + calculaValor(bitcoin);
-        recalcula();
+        } catch (Exception e) {
         }
+        return -1;
     }
-    public void comprar(Double bitcoin){
-        recalculaCompra();
-        if(fundos>=valor_bitcoin){
-            
-        
-        this.bitcoin = this.bitcoin+bitcoin;
-        this.fundos = this.fundos - calculaValor(bitcoin);
+    
+    public synchronized double comprar(double bitcoin){ //investidores vendendo
+        double temp;
+        try {
+            while(this.fundos<bitcoin*valor_bitcoin) wait();
+            fundos-=bitcoin*valor_bitcoin;
+            this.bitcoin+=bitcoin;
+            temp = valor_bitcoin;
+            valor_bitcoin = valor_bitcoin-(0.02*valor_bitcoin); //valor bitcoin cai
+            notifyAll();
+            return temp;
+        } catch (Exception e) {
         }
-        
-    }
-    
-    public void atualizaValor(Double bitcoin){
-        this.bitcoin = this.bitcoin - bitcoin;
-    }
-    
-    public void recalcula(){
-        valor_bitcoin += (0.03*valor_bitcoin); 
-    }
-    
-    public void recalculaCompra(){
-        valor_bitcoin -= (0.01*valor_bitcoin);
-    }
-    
-    public Double calculaValor(Double bitcoin){
-        return (bitcoin*this.valor_bitcoin);
+        return -1;
     }
 
     public Double getBitcoin() {
